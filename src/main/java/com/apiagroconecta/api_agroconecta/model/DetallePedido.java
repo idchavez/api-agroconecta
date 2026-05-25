@@ -22,7 +22,7 @@ public class DetallePedido {
 
     @ManyToOne
     @JoinColumn(name = "producto_id", nullable = false)
-    private Producto producto;
+    private Productos producto;
 
     // ✅ getters y setters
 
@@ -42,7 +42,7 @@ public class DetallePedido {
         return pedido;
     }
 
-    public Producto getProducto() {
+    public Productos getProducto() {
         return producto;
     }
 
