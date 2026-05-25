@@ -39,4 +39,60 @@ public class Pedido {
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HistorialEstadoPedido> historial = new ArrayList<>();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public EstadoPedido getEstadoActual() {
+        return estadoActual;
+    }
+
+    public void setEstadoActual(EstadoPedido estadoActual) {
+        this.estadoActual = estadoActual;
+    }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+
+    public LocalDateTime getCreadoAt() {
+        return creadoAt;
+    }
+
+    public void setCreadoAt(LocalDateTime creadoAt) {
+        this.creadoAt = creadoAt;
+    }
+
+    public List<DetallePedido> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<DetallePedido> detalles) {
+        this.detalles = detalles;
+    }
+
+    public List<HistorialEstadoPedido> getHistorial() {
+        return historial;
+    }
+
+    public void setHistorial(List<HistorialEstadoPedido> historial) {
+        this.historial = historial;
+    }
 }
