@@ -4,6 +4,11 @@ package com.apiagroconecta.api_agroconecta.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "pedidos")
 public class Pedido {
