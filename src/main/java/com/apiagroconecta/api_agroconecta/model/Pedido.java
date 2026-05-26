@@ -95,4 +95,13 @@ public class Pedido {
     public void setHistorial(List<HistorialEstadoPedido> historial) {
         this.historial = historial;
     }
+
+    //metodo Helper
+    public void addHistorial(HistorialEstadoPedido nuevoHistorial) {
+        if (this.historial == null) {
+            this.historial = new ArrayList<>();
+        }
+        this.historial.add(nuevoHistorial);
+        nuevoHistorial.setPedido(this); // Esto asegura que guarde el ID del pedido
+    }
 }

@@ -25,7 +25,7 @@ public class UsuarioRequestDTO {
     @Size(min = 8, message = "La contraseña debe tener al menos 8 carateres")
     //Pattern tambien puede ir en el DTO
     @Pattern(
-            regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).*$",
+            regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!.]).*$",
             message = "La contraseña debe tener al menos un número, una mayuscula, una minúscula y un carácter especial"
     )
     private String password;

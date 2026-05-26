@@ -11,8 +11,7 @@ public class HistorialEstadoPedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "pedido_id", nullable = false)
-    private Integer pedido;
+    // SE ELIMINÓ la propiedad duplicada 'pedidoId' de tipo Integer
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_id", nullable = false)
@@ -24,15 +23,12 @@ public class HistorialEstadoPedido {
     @Column(columnDefinition = "TEXT")
     private String nota;
 
-    public HistorialEstadoPedido() {
-    }
+    // SE CORRIGIÓ: Ahora esta relación es la encargada de escribir en la base de datos
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pedido_id", nullable = false)
+    private Pedido pedido;
 
-    public HistorialEstadoPedido(Integer id, Integer pedidoId, EstadoPedido estadoId, LocalDateTime fecha, String nota) {
-        this.id = id;
-        this.pedido = pedidoId;
-        this.estado = estadoId;
-        this.fecha = fecha;
-        this.nota = nota;
+    public HistorialEstadoPedido() {
     }
 
     public Integer getId() {
@@ -41,14 +37,6 @@ public class HistorialEstadoPedido {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Integer getPedidoId() {
-        return pedido;
-    }
-
-    public void setPedidoId(Integer pedidoId) {
-        this.pedido = pedidoId;
     }
 
     public EstadoPedido getEstadoId() {
@@ -73,5 +61,13 @@ public class HistorialEstadoPedido {
 
     public void setNota(String nota) {
         this.nota = nota;
+    }
+
+    public Pedido getPedido() {
+        return pedido;
+    }
+
+    public void setPedido(Pedido pedido) {
+        this.pedido = pedido;
     }
 }

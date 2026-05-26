@@ -21,12 +21,19 @@ public class HistorialEstadoResponseDTO {
         }
         HistorialEstadoResponseDTO dto = new HistorialEstadoResponseDTO();
         dto.setId(historial.getId());
-        dto.setPedidoId(historial.getPedidoId());
+
+        // MODIFICADO: Navegamos de forma segura hacia el objeto Pedido para extraer su ID
+        if (historial.getPedido() != null) {
+            // Si el ID de tu entidad Pedido es Long, usamos .intValue() para mantener el tipo Integer del DTO
+            dto.setPedidoId(historial.getPedido().getId().intValue());
+        }
+
         dto.setEstadoId(historial.getEstadoId());
         dto.setFecha(historial.getFecha());
         dto.setNota(historial.getNota());
         return dto;
     }
+
 
     public Integer getId() {
         return id;
