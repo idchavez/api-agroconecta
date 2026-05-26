@@ -37,14 +37,14 @@ public class PedidoResponseDTO {
         dto.setCreadoAt(pedido.getCreadoAt());
 
         // 1. Mapeo seguro de la relación con Usuario (Cliente)
-        if (pedido.getUsuario() != null) {
-            dto.setClienteId(pedido.getUsuario().getId());
-            dto.setClienteNombre(pedido.getUsuario().getNombres()); // Usa el getter real de tu entidad
+        if (pedido.getCliente() != null) {
+            dto.setClienteId(pedido.getCliente().getId());
+            dto.setClienteNombre(pedido.getCliente().getNombres()); // Usa el getter real de tu entidad
         }
 
         // 2. Mapeo seguro del Estado (Asumiendo que EstadoPedido tiene un método getNombre())
         if (pedido.getEstadoActual() != null) {
-            dto.setEstadoActual(pedido.getEstadoActual().getNombre());
+            dto.setEstadoActual(pedido.getEstadoActual().name());
         }
 
         // 3. Mapeo polimórfico con Streams para la lista de Detalles

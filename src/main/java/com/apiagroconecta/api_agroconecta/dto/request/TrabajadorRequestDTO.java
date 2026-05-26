@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public abstract class TrabajadorRequestDTO extends UsuarioRequestDTO {
+public class TrabajadorRequestDTO extends UsuarioRequestDTO {
 
 
     @NotNull(message = "El salario es obligatorio")
@@ -37,8 +37,45 @@ public abstract class TrabajadorRequestDTO extends UsuarioRequestDTO {
 
     public TrabajadorRequestDTO() {
         super();
-
     }
 
+    public BigDecimal getSalario() {
+        return salario;
+    }
 
+    public void setSalario(BigDecimal salario) {
+        this.salario = salario;
+    }
+
+    public LocalDate getFechaContratacion() {
+        return fechaContratacion;
+    }
+
+    public void setFechaContratacion(LocalDate fechaContratacion) {
+        this.fechaContratacion = fechaContratacion;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    public String getTurno() {
+        return turno;
+    }
+
+    public void setTurno(String turno) {
+        this.turno = turno;
+    }
+
+    public String getCodigoEmpleado() {
+        return codigoEmpleado;
+    }
+
+    public void setCodigoEmpleado(String codigoEmpleado) {
+        this.codigoEmpleado = codigoEmpleado;
+    }
 }

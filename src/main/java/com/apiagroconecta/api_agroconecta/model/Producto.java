@@ -1,5 +1,6 @@
 package com.apiagroconecta.api_agroconecta.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -29,7 +30,7 @@ public class Producto {
     private String imagen;
     @JdbcTypeCode(SqlTypes.JSON)//Como debe serializar y deserializar el objeto Hibernate
     @Column(columnDefinition = "jsonb")
-    private String detalles = "{}";
+    private JsonNode detalles;
     @Min(value = 0, message = "La cantidad no puede ser negativa")
     private Integer cantidad;
     @CreationTimestamp //Hibernate se encarga de poner la fecha actual del sistema justo antes de hacer el INSERT
@@ -46,23 +47,22 @@ public class Producto {
     @NotNull(message = "La categoria es obligatoria")
     private Categoria categoria;
 
-    public Producto() {
-    }
+    public Producto() {}
 
-    public Producto(Long id, String nombre, BigDecimal precio, String descripcion, String imagen, String detalles, Integer cantidad, LocalDateTime fechaDeIngreso, Boolean activo, Integer stockMinimo, String descripcionLong, Categoria categoria) {
-        this.id = id;
-        this.nombre = nombre;
-        this.precio = precio;
-        this.descripcion = descripcion;
-        this.imagen = imagen;
-        this.detalles = detalles;
-        this.cantidad = cantidad;
-        this.fechaDeIngreso = fechaDeIngreso;
-        this.activo = activo;
-        this.stockMinimo = stockMinimo;
-        this.descripcionLong = descripcionLong;
-        this.categoria = categoria;
-    }
+//    public Producto(Long id, String nombre, BigDecimal precio, String descripcion, String imagen, String detalles, Integer cantidad, LocalDateTime fechaDeIngreso, Boolean activo, Integer stockMinimo, String descripcionLong, Categoria categoria) {
+//        this.id = id;
+//        this.nombre = nombre;
+//        this.precio = precio;
+//        this.descripcion = descripcion;
+//        this.imagen = imagen;
+//        this.detalles = detalles;
+//        this.cantidad = cantidad;
+//        this.fechaDeIngreso = fechaDeIngreso;
+//        this.activo = activo;
+//        this.stockMinimo = stockMinimo;
+//        this.descripcionLong = descripcionLong;
+//        this.categoria = categoria;
+//    }
 
     public Long getId() {
         return id;
@@ -104,11 +104,11 @@ public class Producto {
         this.imagen = imagen;
     }
 
-    public String getDetalles() {
+    public JsonNode getDetalles() {
         return detalles;
     }
 
-    public void setDetalles(String detalles) {
+    public void setDetalles(JsonNode detalles) {
         this.detalles = detalles;
     }
 

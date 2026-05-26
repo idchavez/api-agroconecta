@@ -12,10 +12,11 @@ public class HistorialEstadoPedido {
     private Integer id;
 
     @Column(name = "pedido_id", nullable = false)
-    private Integer pedidoId;
+    private Integer pedido;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado_id", nullable = false)
-    private Integer estadoId;
+    private EstadoPedido estado;
 
     @Column(nullable = false)
     private LocalDateTime fecha;
@@ -26,10 +27,10 @@ public class HistorialEstadoPedido {
     public HistorialEstadoPedido() {
     }
 
-    public HistorialEstadoPedido(Integer id, Integer pedidoId, Integer estadoId, LocalDateTime fecha, String nota) {
+    public HistorialEstadoPedido(Integer id, Integer pedidoId, EstadoPedido estadoId, LocalDateTime fecha, String nota) {
         this.id = id;
-        this.pedidoId = pedidoId;
-        this.estadoId = estadoId;
+        this.pedido = pedidoId;
+        this.estado = estadoId;
         this.fecha = fecha;
         this.nota = nota;
     }
@@ -43,19 +44,19 @@ public class HistorialEstadoPedido {
     }
 
     public Integer getPedidoId() {
-        return pedidoId;
+        return pedido;
     }
 
     public void setPedidoId(Integer pedidoId) {
-        this.pedidoId = pedidoId;
+        this.pedido = pedidoId;
     }
 
-    public Integer getEstadoId() {
-        return estadoId;
+    public EstadoPedido getEstadoId() {
+        return estado;
     }
 
-    public void setEstadoId(Integer estadoId) {
-        this.estadoId = estadoId;
+    public void setEstadoId(EstadoPedido estadoId) {
+        this.estado = estadoId;
     }
 
     public LocalDateTime getFecha() {

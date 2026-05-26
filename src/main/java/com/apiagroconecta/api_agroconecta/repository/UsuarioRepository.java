@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    boolean existsByEmail(String email);
+    boolean existsByCorreo(String correo);
 
     // Spring Data JPA genera automáticamente: SELECT * FROM usuarios WHERE rol = ?
     List<Usuario> findByRol(Rol rol);
