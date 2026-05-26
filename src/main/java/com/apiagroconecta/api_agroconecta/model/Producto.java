@@ -1,43 +1,55 @@
 package com.apiagroconecta.api_agroconecta.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 @Entity
 @Table(name = "productos")
-public class Productos {
+public class Producto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false, length = 150)
+    @NotBlank(message = "El nombre del producto es obligatorio")
+    @Size(max = 100, message = "El nombre no puede superar los 100 caracteres")
+    @Column(nullable = false, length = 100)
     private String nombre;
+    @NotNull(message = "El precio es obligatorio")
+    @DecimalMin(value = "0.0", inclusive = true, message = "El precio no puede ser negativo")
     @Column(nullable = false, precision = 10, scale = 2)
-    private Double precio;
+    private BigDecimal precio;
     @Column(columnDefinition = "TEXT")
     private String descripcion;
-    private String[] imagen;
-    private String detalles;
+    private String imagen;
+    @JdbcTypeCode(SqlTypes.JSON)//Como debe serializar y deserializar el objeto Hibernate
+    @Column(columnDefinition = "jsonb")
+    private String detalles = "{}";
+    @Min(value = 0, message = "La cantidad no puede ser negativa")
     private Integer cantidad;
-
-    @Column(name = "tipoproducto", length = 100)
-    private String tipoProducto;
-
-    @Column(name = "fechadeingreso", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @CreationTimestamp //Hibernate se encarga de poner la fecha actual del sistema justo antes de hacer el INSERT
+    @Column(name = "fecha_ingreso", updatable = false)
     private LocalDateTime fechaDeIngreso;
-    private Boolean activo;
-    private Integer stockMinimo;
+    private Boolean activo = true;
+    @Min(value = 0, message = "El stock minimo no puede ser negativo")
+    @Column(name = "stock_minimo")
+    private Integer stockMinimo = 1;
+    @Column(name = "descripcion_long", columnDefinition = "TEXT")
     private String descripcionLong;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", referencedColumnName = "id")
-    private Integer categoriaId;
+    @NotNull(message = "La categoria es obligatoria")
+    private Categoria categoria;
 
-    public Productos() {
+    public Producto() {
     }
 
-    public Productos(Long id, String nombre, Double precio, String descripcion, String[] imagen, String detalles, Integer cantidad, String tipoProducto, LocalDateTime fechaDeIngreso, Boolean activo, Integer stockMinimo, String descripcionLong, Integer categoriaId) {
+    public Producto(Long id, String nombre, BigDecimal precio, String descripcion, String imagen, String detalles, Integer cantidad, LocalDateTime fechaDeIngreso, Boolean activo, Integer stockMinimo, String descripcionLong, Categoria categoria) {
         this.id = id;
         this.nombre = nombre;
         this.precio = precio;
@@ -45,12 +57,11 @@ public class Productos {
         this.imagen = imagen;
         this.detalles = detalles;
         this.cantidad = cantidad;
-        this.tipoProducto = tipoProducto;
         this.fechaDeIngreso = fechaDeIngreso;
         this.activo = activo;
         this.stockMinimo = stockMinimo;
         this.descripcionLong = descripcionLong;
-        this.categoriaId = categoriaId;
+        this.categoria = categoria;
     }
 
     public Long getId() {
@@ -69,11 +80,11 @@ public class Productos {
         this.nombre = nombre;
     }
 
-    public Double getPrecio() {
+    public BigDecimal getPrecio() {
         return precio;
     }
 
-    public void setPrecio(Double precio) {
+    public void setPrecio(BigDecimal precio) {
         this.precio = precio;
     }
 
@@ -85,11 +96,11 @@ public class Productos {
         this.descripcion = descripcion;
     }
 
-    public String[] getImagen() {
+    public String getImagen() {
         return imagen;
     }
 
-    public void setImagen(String[] imagen) {
+    public void setImagen(String imagen) {
         this.imagen = imagen;
     }
 
@@ -107,14 +118,6 @@ public class Productos {
 
     public void setCantidad(Integer cantidad) {
         this.cantidad = cantidad;
-    }
-
-    public String getTipoProducto() {
-        return tipoProducto;
-    }
-
-    public void setTipoProducto(String tipoProducto) {
-        this.tipoProducto = tipoProducto;
     }
 
     public LocalDateTime getFechaDeIngreso() {
@@ -149,11 +152,11 @@ public class Productos {
         this.descripcionLong = descripcionLong;
     }
 
-    public Integer getCategoriaId() {
-        return categoriaId;
+    public Categoria getCategoria() {
+        return categoria;
     }
 
-    public void setCategoriaId(Integer categoriaId) {
-        this.categoriaId = categoriaId;
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 }

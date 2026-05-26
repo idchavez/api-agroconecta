@@ -33,4 +33,44 @@ public class HistorialEstadoPedido {
         this.fecha = fecha;
         this.nota = nota;
     }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getPedidoId() {
+        return pedidoId;
+    }
+
+    public void setPedidoId(Integer pedidoId) {
+        this.pedidoId = pedidoId;
+    }
+
+    public Integer getEstadoId() {
+        return estadoId;
+    }
+
+    public void setEstadoId(Integer estadoId) {
+        this.estadoId = estadoId;
+    }
+
+    public LocalDateTime getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDateTime fecha) {
+        this.fecha = fecha;
+    }
+
+    public String getNota() {
+        return nota;
+    }
+
+    public void setNota(String nota) {
+        this.nota = nota;
+    }
 }

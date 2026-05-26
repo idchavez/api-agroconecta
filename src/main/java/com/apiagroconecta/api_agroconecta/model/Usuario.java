@@ -2,7 +2,11 @@ package com.apiagroconecta.api_agroconecta.model;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
@@ -13,51 +17,53 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre es obligatorio")
     @Column(nullable = false)
     private String nombres;
 
-    @NotBlank(message = "El teléfono es obligatorio")
-    @Size(max = 30)
     @Column(nullable = false, length = 30)
     private String telefono;
 
 
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "Debe tener un formato de email válido")
     @Column(unique = true, nullable = false)
     private String correo;
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 8, message = "La contraseña debe tener al menos 8 carateres")
-    //Pattern tambien puede ir en el DTO
-    @Pattern(
-            regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).*$",
-            message = "La contraseña debe tener al menos un número, una mayuscula, una minúscula y un carácter especial"
-    )
+
     @Column(nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+
+    @Column
     private Rol rol;
+
+    @Column
+    private boolean estado;
+
+    //Datos de cliente
+    @OneToMany(mappedBy = "cliente",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Pedido> pedidos = new ArrayList<>();
+
+    //Datos de Trabajadores
+    @Column
+    private BigDecimal salario;
+
+    @Column
+    private LocalDate fechaContratacion;
+
+    @Column
+    private String area;
+
+
+    @Column
+    private String turno;
+
+
+    @Column
+    private String codigoEmpleado;
 
     public Usuario() {
     }
 
-    public Usuario(Long id,
-                   String nombres,
-                   String telefono,
-                   String correo,
-                   String password,
-                   Rol rol) {
-        this.id = id;
-        this.nombres = nombres;
-        this.telefono = telefono;
-        this.correo = correo;
-        this.password = password;
-        this.rol = rol;
-    }
+
 
     //Getters and Setters
 
@@ -108,5 +114,61 @@ public class Usuario {
 
     public void setRol(Rol rol) {
         this.rol = rol;
+    }
+
+    public boolean isEstado() {
+        return estado;
+    }
+
+    public void setEstado(boolean estado) {
+        this.estado = estado;
+    }
+
+    public List<Pedido> getPedidos() {
+        return pedidos;
+    }
+
+    public void setPedidos(List<Pedido> pedidos) {
+        this.pedidos = pedidos;
+    }
+
+    public BigDecimal getSalario() {
+        return salario;
+    }
+
+    public void setSalario(BigDecimal salario) {
+        this.salario = salario;
+    }
+
+    public LocalDate getFechaContratacion() {
+        return fechaContratacion;
+    }
+
+    public void setFechaContratacion(LocalDate fechaContratacion) {
+        this.fechaContratacion = fechaContratacion;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    public String getTurno() {
+        return turno;
+    }
+
+    public void setTurno(String turno) {
+        this.turno = turno;
+    }
+
+    public String getCodigoEmpleado() {
+        return codigoEmpleado;
+    }
+
+    public void setCodigoEmpleado(String codigoEmpleado) {
+        this.codigoEmpleado = codigoEmpleado;
     }
 }

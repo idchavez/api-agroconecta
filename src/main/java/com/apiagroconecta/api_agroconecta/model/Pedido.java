@@ -19,12 +19,12 @@ public class Pedido {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false)
-    private Cliente cliente; // Cambiado de Usuario a Cliente
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario cliente; // Cambiado de Usuario a Cliente
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "estado_id", nullable = false)
+
+    @Enumerated(value = EnumType.STRING)
+    @Column(nullable = false)
     private EstadoPedido estadoActual;
 
     @Column(nullable = false, precision = 10, scale = 2)
@@ -48,11 +48,11 @@ public class Pedido {
         this.id = id;
     }
 
-    public Cliente getCliente() {
+    public Usuario getCliente() {
         return cliente;
     }
 
-    public void setCliente(Cliente cliente) {
+    public void setCliente(Usuario cliente) {
         this.cliente = cliente;
     }
 
