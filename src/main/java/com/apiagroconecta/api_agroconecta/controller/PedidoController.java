@@ -90,14 +90,14 @@ public class PedidoController {
     }
 
     // Cancelar lógicamente un pedido
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancelarPedido(@PathVariable Long id) {
-        boolean cancelado = pedidoService.delete(id);
-        if (!cancelado) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.noContent().build();
-    }
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> cancelarPedido(@PathVariable Long id) {
+//        boolean cancelado = pedidoService.delete(id);
+//        if (!cancelado) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        return ResponseEntity.noContent().build();
+//    }
 
     // DTO de petición interna para actualizar estado
     public static class EstadoUpdateRequest {

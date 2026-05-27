@@ -2,6 +2,8 @@ package com.apiagroconecta.api_agroconecta.service;
 
 import com.apiagroconecta.api_agroconecta.dto.request.CategoriaRequestDTO;
 import com.apiagroconecta.api_agroconecta.dto.response.CategoriaResponseDTO;
+import com.apiagroconecta.api_agroconecta.exception.ConflictException;
+import com.apiagroconecta.api_agroconecta.exception.ResourceNotFoundException;
 import com.apiagroconecta.api_agroconecta.model.Categoria;
 import com.apiagroconecta.api_agroconecta.repository.CategoriaRepository;
 import org.springframework.stereotype.Service;
@@ -29,14 +31,16 @@ public class CategoriaService {
     @Transactional(readOnly = true)
     public CategoriaResponseDTO findById(Long id) {
         Categoria categoria = categoriaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoria no encontrada con ID: " + id));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Categoria no encontrada"));
         return CategoriaResponseDTO.desde(categoria);
     }
 
     @Transactional
     public CategoriaResponseDTO save(CategoriaRequestDTO dto) {
-        if (categoriaRepository.existsByNombre(dto.getNombre())) {
-            throw new RuntimeException("Ya existe una categoria con el nombre: " + dto.getNombre());
+        if (categoriaRepository.existsByNombreIgnoreCase(dto.getNombre())) {
+            throw new ConflictException(
+                    "Ya existe una categoria con el nombre: " + dto.getNombre());
         }
 
         Categoria categoria = new Categoria();
@@ -49,7 +53,7 @@ public class CategoriaService {
     @Transactional
     public CategoriaResponseDTO update(Long id, CategoriaRequestDTO dto) {
         Categoria categoriaExistente = categoriaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoria no encontrada para actualizar"));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada para actualizar"));
 
         categoriaExistente.setNombre(dto.getNombre());
         Categoria actualizada = categoriaRepository.save(categoriaExistente);
@@ -59,7 +63,7 @@ public class CategoriaService {
     @Transactional
     public void deleteById(Long id) {
         if (!categoriaRepository.existsById(id)) {
-            throw new RuntimeException("No se puede eliminar. Categoría no encontrada con ID: " + id);
+            throw new ResourceNotFoundException("No se puede eliminar. Categoría no encontrada");
         }
         categoriaRepository.deleteById(id);
     }

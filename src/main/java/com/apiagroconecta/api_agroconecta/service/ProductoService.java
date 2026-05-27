@@ -2,6 +2,7 @@ package com.apiagroconecta.api_agroconecta.service;
 
 import com.apiagroconecta.api_agroconecta.dto.request.ProductoRequestDTO;
 import com.apiagroconecta.api_agroconecta.dto.response.ProductoResponseDTO;
+import com.apiagroconecta.api_agroconecta.exception.ResourceNotFoundException;
 import com.apiagroconecta.api_agroconecta.model.Categoria;
 import com.apiagroconecta.api_agroconecta.model.Producto;
 import com.apiagroconecta.api_agroconecta.repository.CategoriaRepository;
@@ -40,14 +41,14 @@ public class ProductoService {
     @Transactional(readOnly = true)
     public ProductoResponseDTO findById(Long id) {
         Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
         return ProductoResponseDTO.desde(producto);
     }
 
     @Transactional
     public ProductoResponseDTO save(ProductoRequestDTO dto) {
         Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
-                .orElseThrow(() -> new RuntimeException("La categoría asignada no existe"));
+                .orElseThrow(() -> new ResourceNotFoundException("La categoría asignada no existe"));
 
         Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
@@ -81,10 +82,10 @@ public class ProductoService {
     @Transactional
     public ProductoResponseDTO update(Long id, ProductoRequestDTO dto) {
         Producto productoExistente = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado para actualizar"));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado para actualizar"));
 
         Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
-                .orElseThrow(() -> new RuntimeException("La categoría asignada no existe"));
+                .orElseThrow(() -> new ResourceNotFoundException("La categoría asignada no existe"));
 
         productoExistente.setNombre(dto.getNombre());
         productoExistente.setPrecio(dto.getPrecio());
