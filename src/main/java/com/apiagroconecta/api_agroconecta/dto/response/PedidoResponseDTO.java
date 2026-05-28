@@ -39,7 +39,7 @@ public class PedidoResponseDTO {
         // 1. Mapeo seguro de la relación con Usuario (Cliente)
         if (pedido.getCliente() != null) {
             dto.setClienteId(pedido.getCliente().getId());
-            dto.setClienteNombre(pedido.getCliente().getNombres()); // Usa el getter real de tu entidad
+            dto.setClienteNombre(pedido.getCliente().getNombre()); // Usa el getter real de tu entidad
         }
 
         // 2. Mapeo seguro del Estado (Asumiendo que EstadoPedido tiene un método getNombre())

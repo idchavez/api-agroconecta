@@ -1,12 +1,14 @@
 package com.apiagroconecta.api_agroconecta.service;
 
+import com.apiagroconecta.api_agroconecta.auth.model.Rol;
+import com.apiagroconecta.api_agroconecta.auth.model.Usuario;
 import com.apiagroconecta.api_agroconecta.dto.request.PedidoRequestDTO;
 import com.apiagroconecta.api_agroconecta.dto.response.PedidoResponseDTO;
 import com.apiagroconecta.api_agroconecta.model.*;
 import com.apiagroconecta.api_agroconecta.repository.HistorialEstadoPedidoRepository;
 import com.apiagroconecta.api_agroconecta.repository.PedidoRepository;
 import com.apiagroconecta.api_agroconecta.repository.ProductoRepository;
-import com.apiagroconecta.api_agroconecta.repository.UsuarioRepository;
+import com.apiagroconecta.api_agroconecta.auth.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +57,7 @@ public class PedidoService {
     // Listar todos los pedidos de un cliente específico
     public List<PedidoResponseDTO> findByClienteId(Long clienteId) {
         Usuario cliente = usuarioRepository.findById(clienteId).orElse(null);
-        if (cliente == null || cliente.getRol() != Rol.CUSTOMER) {
+        if (cliente == null || cliente.getRol() != Rol.CLIENTE) {
             throw new IllegalArgumentException("El ID proporcionado no pertenece a un cliente válido");
         }
         
@@ -70,7 +72,7 @@ public class PedidoService {
     @Transactional
     public PedidoResponseDTO save(PedidoRequestDTO dto) {
         Usuario cliente = usuarioRepository.findById(dto.getClienteId()).orElse(null);
-        if (cliente == null || cliente.getRol() != Rol.CUSTOMER || !cliente.isEstado()) {
+        if (cliente == null || cliente.getRol() != Rol.CLIENTE) {
             throw new IllegalArgumentException("Cliente no encontrado o inactivo");
         }
 

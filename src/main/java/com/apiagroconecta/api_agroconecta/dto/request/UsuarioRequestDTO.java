@@ -1,7 +1,6 @@
 package com.apiagroconecta.api_agroconecta.dto.request;
 
-import com.apiagroconecta.api_agroconecta.model.Rol;
-import jakarta.persistence.*;
+import com.apiagroconecta.api_agroconecta.auth.model.Rol;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

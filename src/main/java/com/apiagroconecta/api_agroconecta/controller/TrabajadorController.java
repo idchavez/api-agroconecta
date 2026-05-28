@@ -2,7 +2,7 @@ package com.apiagroconecta.api_agroconecta.controller;
 
 import com.apiagroconecta.api_agroconecta.dto.request.TrabajadorRequestDTO;
 import com.apiagroconecta.api_agroconecta.dto.response.UsuarioResponseDTO;
-import com.apiagroconecta.api_agroconecta.service.UsuarioService;
+import com.apiagroconecta.api_agroconecta.auth.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/trabajadores")
 public class TrabajadorController {
-
+    /*
     private final UsuarioService usuarioService;
 
     @Autowired
@@ -73,5 +73,5 @@ public class TrabajadorController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.noContent().build();
-    }
+    }*/
 }

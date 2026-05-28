@@ -2,6 +2,7 @@ package com.apiagroconecta.api_agroconecta.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.validation.FieldError;
@@ -40,6 +41,24 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(error);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleBadCredentials(
+            BadCredentialsException ex,
+            HttpServletRequest request) {
+
+        Map<String, Object> error = new LinkedHashMap<>();
+
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", 401);
+        error.put("error", "Unauthorized");
+        error.put("message", "Credenciales incorrectas");
+        error.put("path", request.getRequestURI());
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
                 .body(error);
     }
 

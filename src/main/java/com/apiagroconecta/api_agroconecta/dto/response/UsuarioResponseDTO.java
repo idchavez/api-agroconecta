@@ -1,21 +1,17 @@
 package com.apiagroconecta.api_agroconecta.dto.response;
 
-import com.apiagroconecta.api_agroconecta.model.Pedido;
-import com.apiagroconecta.api_agroconecta.model.Rol;
-import com.apiagroconecta.api_agroconecta.model.Usuario;
+import com.apiagroconecta.api_agroconecta.auth.model.Rol;
+import com.apiagroconecta.api_agroconecta.auth.model.Usuario;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.OneToMany;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UsuarioResponseDTO {
+    /*
     private Long clienteId;
     private String name;
     private String email;
@@ -179,4 +175,6 @@ public class UsuarioResponseDTO {
     public void setCodigoEmpleado(String codigoEmpleado) {
         this.codigoEmpleado = codigoEmpleado;
     }
+
+     */
 }

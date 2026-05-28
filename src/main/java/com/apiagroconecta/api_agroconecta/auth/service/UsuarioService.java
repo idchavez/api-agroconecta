@@ -1,11 +1,11 @@
-package com.apiagroconecta.api_agroconecta.service;
+package com.apiagroconecta.api_agroconecta.auth.service;
 
 import com.apiagroconecta.api_agroconecta.dto.request.ClienteRequestDTO;
 import com.apiagroconecta.api_agroconecta.dto.request.TrabajadorRequestDTO;
 import com.apiagroconecta.api_agroconecta.dto.response.UsuarioResponseDTO;
-import com.apiagroconecta.api_agroconecta.model.Rol;
-import com.apiagroconecta.api_agroconecta.model.Usuario;
-import com.apiagroconecta.api_agroconecta.repository.UsuarioRepository;
+import com.apiagroconecta.api_agroconecta.auth.model.Rol;
+import com.apiagroconecta.api_agroconecta.auth.model.Usuario;
+import com.apiagroconecta.api_agroconecta.auth.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
-
+/*
     private final UsuarioRepository usuarioRepository;
 
     @Autowired
@@ -188,4 +188,6 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
         return true;
     }
+
+ */
 }

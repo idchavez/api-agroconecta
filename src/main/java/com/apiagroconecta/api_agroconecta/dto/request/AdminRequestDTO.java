@@ -1,6 +1,6 @@
 package com.apiagroconecta.api_agroconecta.dto.request;
 
-import com.apiagroconecta.api_agroconecta.model.Rol;
+import com.apiagroconecta.api_agroconecta.auth.model.Rol;
 
 public class AdminRequestDTO extends TrabajadorRequestDTO {
 

@@ -1,8 +1,5 @@
 package com.apiagroconecta.api_agroconecta.dto.request;
 
-import com.apiagroconecta.api_agroconecta.model.Rol;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;

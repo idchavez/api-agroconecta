@@ -1,6 +1,7 @@
 package com.apiagroconecta.api_agroconecta.model;
 
 
+import com.apiagroconecta.api_agroconecta.auth.model.Usuario;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
