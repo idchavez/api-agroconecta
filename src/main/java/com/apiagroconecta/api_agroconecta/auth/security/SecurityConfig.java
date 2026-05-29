@@ -45,25 +45,22 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Endpoints de autenticación: públicos — son la puerta de entrada.
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
 
-                        // Consultas (GET): accesibles para CLIENTE y ADMIN.
-                        .requestMatchers(HttpMethod.GET, "/productos/**").hasAnyRole("ADMIN", "CLIENTE")
-                        .requestMatchers(HttpMethod.GET, "/clientes/**").hasAnyRole("ADMIN", "CLIENTE")
-                        .requestMatchers(HttpMethod.GET, "/ordenes/**").hasAnyRole("ADMIN", "CLIENTE")
+                        // Solo ADMIN
+                        .requestMatchers("/api/v1/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/categorias/**", "/api/v1/productos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/categorias/**", "/api/v1/productos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/categorias/**", "/api/v1/productos/**").hasRole("ADMIN")
 
-                        // Modificaciones: solo ADMIN puede crear, actualizar o eliminar.
-                        .requestMatchers(HttpMethod.POST, "/productos/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/productos/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/productos/**").hasRole("ADMIN")
+                        // Lectura para ADMIN y CLIENTE
+                        .requestMatchers(HttpMethod.GET, "/api/v1/productos/**", "/api/v1/categorias/**").hasAnyRole("ADMIN", "CLIENTE")
 
-                        .requestMatchers(HttpMethod.POST, "/clientes/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/clientes/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/clientes/**").hasRole("ADMIN")
+                        // Pedidos
+                        .requestMatchers("/api/v1/pedidos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/pedidos/**").hasRole("CLIENTE")
 
-                        // Órdenes: CLIENTE puede crear y ver sus propias órdenes.
-                        .requestMatchers(HttpMethod.POST, "/ordenes/**").hasAnyRole("ADMIN", "CLIENTE")
-
+                        .requestMatchers("/api/v1/detalles/**").hasAnyRole("ADMIN", "CLIENTE")
                         // Todo lo demás requiere autenticación.
                         .anyRequest().authenticated()
                 )

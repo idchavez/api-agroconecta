@@ -5,6 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -33,6 +34,13 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private Rol rol;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoUsuario estado;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime fechaCreacion;
+
     // Constructor vacío obligatorio para JPA.
     public Usuario() {}
 
@@ -42,6 +50,9 @@ public class Usuario implements UserDetails {
         this.password = password;
         this.nombre = nombre;
         this.rol = rol;
+
+        this.estado = EstadoUsuario.ACTIVO;
+        this.fechaCreacion = LocalDateTime.now();
     }
 
     // getAuthorities: Spring Security llama a este método para saber
@@ -87,4 +98,13 @@ public class Usuario implements UserDetails {
     public void setNombre(String nombre) { this.nombre = nombre; }
     public Rol getRol() { return rol; }
     public void setRol(Rol rol) { this.rol = rol; }
+    public EstadoUsuario getEstado() {
+        return estado;
+    }
+    public void setEstado(EstadoUsuario estado) {
+        this.estado = estado;
+    }
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
 }

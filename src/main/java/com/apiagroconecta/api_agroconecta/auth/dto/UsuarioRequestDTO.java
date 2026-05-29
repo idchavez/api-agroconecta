@@ -1,4 +1,4 @@
-package com.apiagroconecta.api_agroconecta.dto.request;
+package com.apiagroconecta.api_agroconecta.auth.dto;
 
 import com.apiagroconecta.api_agroconecta.auth.model.Rol;
 import jakarta.validation.constraints.Email;

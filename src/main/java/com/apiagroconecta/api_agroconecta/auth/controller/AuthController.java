@@ -20,7 +20,7 @@ import java.util.Map;
 // POST /auth/register → crea un usuario nuevo
 // POST /auth/login    → valida credenciales y devuelve el token JWT
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final UsuarioRepository usuarioRepository;

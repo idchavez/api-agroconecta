@@ -24,8 +24,6 @@ public class DetallePedido {
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 
-    // ✅ getters y setters
-
     public Long getId() {
         return id;
     }
