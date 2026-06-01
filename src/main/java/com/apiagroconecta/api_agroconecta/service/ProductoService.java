@@ -2,18 +2,18 @@ package com.apiagroconecta.api_agroconecta.service;
 
 import com.apiagroconecta.api_agroconecta.dto.request.ProductoRequestDTO;
 import com.apiagroconecta.api_agroconecta.dto.response.ProductoResponseDTO;
-import com.apiagroconecta.api_agroconecta.exception.ResourceNotFoundException;
 import com.apiagroconecta.api_agroconecta.model.Categoria;
 import com.apiagroconecta.api_agroconecta.model.Producto;
 import com.apiagroconecta.api_agroconecta.repository.CategoriaRepository;
 import com.apiagroconecta.api_agroconecta.repository.ProductoRepository;
+import com.apiagroconecta.api_agroconecta.service.storage.UploadImageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,14 +21,18 @@ import java.util.stream.Collectors;
 public class ProductoService {
     private final ProductoRepository productoRepository;
     private final CategoriaRepository categoriaRepository;
+    private final UploadImageService uploadImageService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
     public ProductoService(ProductoRepository productoRepository,
-                           CategoriaRepository categoriaRepository) {
+                           CategoriaRepository categoriaRepository,
+                           UploadImageService uploadImageService) {
         this.productoRepository = productoRepository;
         this.categoriaRepository = categoriaRepository;
+        this.uploadImageService = uploadImageService;
     }
 
     @Transactional(readOnly = true)
@@ -41,14 +45,14 @@ public class ProductoService {
     @Transactional(readOnly = true)
     public ProductoResponseDTO findById(Long id) {
         Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
         return ProductoResponseDTO.desde(producto);
     }
 
     @Transactional
     public ProductoResponseDTO save(ProductoRequestDTO dto) {
         Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
-                .orElseThrow(() -> new ResourceNotFoundException("La categoría asignada no existe"));
+                .orElseThrow(() -> new RuntimeException("La categoría asignada no existe"));
 
         Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
@@ -58,7 +62,6 @@ public class ProductoService {
         producto.setStockMinimo(dto.getStockMinimo() != null ? dto.getStockMinimo() : 1);
         producto.setDescripcionLong(dto.getDescripcionLong());
 
-        // Controlamos el JsonNode: si es nulo, creamos un objeto JSON vacío ({}) seguro
         if (dto.getDetalles() != null) {
             producto.setDetalles(dto.getDetalles());
         } else {
@@ -67,25 +70,40 @@ public class ProductoService {
         producto.setCategoria(categoria);
         producto.setActivo(true);
 
-//        if (dto.getImagen() != null && !dto.getImagen().isEmpty()) {
-//            String imagenesConcatenadas = dto.getImagen().stream()
-//                    .map(imageStorageService::guardarBase64ALocal)
-//                    .collect(Collectors.joining(","));
-//            producto.setImagen(imagenesConcatenadas);
-//        }
+        // Procesar y subir múltiples imágenes a GCP
+        if (dto.getImagenes() != null && !dto.getImagenes().isEmpty()) {
+            List<String> urls = new ArrayList<>();
+            for (String img : dto.getImagenes()) {
+                if (img == null || img.isBlank()) {
+                    continue;
+                }
+                if (img.startsWith("http://") || img.startsWith("https://")) {
+                    urls.add(img);
+                } else {
+                    try {
+                        String url = uploadImageService.uploadBase64(img);
+                        urls.add(url);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error al subir la imagen a GCP: " + e.getMessage(), e);
+                    }
+                }
+            }
+            producto.setImagenesFromList(urls);
+        } else {
+            producto.setImagen("");
+        }
 
         Producto guardado = productoRepository.save(producto);
-        //return convertirAResponseDTO(guardado);
         return ProductoResponseDTO.desde(guardado);
     }
 
     @Transactional
     public ProductoResponseDTO update(Long id, ProductoRequestDTO dto) {
         Producto productoExistente = productoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado para actualizar"));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado para actualizar"));
 
         Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
-                .orElseThrow(() -> new ResourceNotFoundException("La categoría asignada no existe"));
+                .orElseThrow(() -> new RuntimeException("La categoría asignada no existe"));
 
         productoExistente.setNombre(dto.getNombre());
         productoExistente.setPrecio(dto.getPrecio());
@@ -96,29 +114,30 @@ public class ProductoService {
         productoExistente.setDetalles(dto.getDetalles());
         productoExistente.setCategoria(categoria);
 
-        // Si se suben nuevas imágenes, se sobrescriben las anteriores
-//        if (dto.getImagenesBase64() != null && !dto.getImagenesBase64().isEmpty()) {
-//            String nuevasImagenesConcatenadas = dto.getImagenesBase64().stream()
-//                    .map(imageStorageService::guardarBase64ALocal)
-//                    .collect(Collectors.joining(","));
-//            productoExistente.setImagen(nuevasImagenesConcatenadas);
-//        }
+        // Procesar y subir nuevas imágenes (sobrescribiendo las anteriores)
+        if (dto.getImagenes() != null && !dto.getImagenes().isEmpty()) {
+            List<String> urls = new ArrayList<>();
+            for (String img : dto.getImagenes()) {
+                if (img == null || img.isBlank()) {
+                    continue;
+                }
+                if (img.startsWith("http://") || img.startsWith("https://")) {
+                    urls.add(img);
+                } else {
+                    try {
+                        String url = uploadImageService.uploadBase64(img);
+                        urls.add(url);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error al subir la imagen a GCP: " + e.getMessage(), e);
+                    }
+                }
+            }
+            productoExistente.setImagenesFromList(urls);
+        } else {
+            productoExistente.setImagen("");
+        }
 
         Producto actualizado = productoRepository.save(productoExistente);
-        //return convertirAResponseDTO(actualizado);
-        return ProductoResponseDTO.desde(productoRepository.save(productoExistente));
+        return ProductoResponseDTO.desde(actualizado);
     }
-
-    // Helper interno para reconstruir la lista de URLs desde el String plano mapeado
-//    private ProductoResponseDTO convertirAResponseDTO(Producto producto) {
-//        List<String> urlsPublicas = Collections.emptyList();
-//
-//        if (producto.getImagen() != null && !producto.getImagen().trim().isEmpty()) {
-//            urlsPublicas = Arrays.stream(producto.getImagen().split(","))
-//                    .map(imageStorageService::generarUrlPublica)
-//                    .collect(Collectors.toList());
-//        }
-//
-//        return ProductoResponseDTO.desde(producto);
-//    }
 }
