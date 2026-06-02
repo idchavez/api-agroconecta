@@ -1,6 +1,7 @@
 package com.apiagroconecta.api_agroconecta.service;
 
 import com.apiagroconecta.api_agroconecta.dto.request.ProductoRequestDTO;
+import com.apiagroconecta.api_agroconecta.dto.request.ProductoUpdateDTO;
 import com.apiagroconecta.api_agroconecta.dto.response.ProductoResponseDTO;
 import com.apiagroconecta.api_agroconecta.model.Categoria;
 import com.apiagroconecta.api_agroconecta.model.Producto;
@@ -8,7 +9,10 @@ import com.apiagroconecta.api_agroconecta.repository.CategoriaRepository;
 import com.apiagroconecta.api_agroconecta.repository.ProductoRepository;
 import com.apiagroconecta.api_agroconecta.service.storage.UploadImageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +39,61 @@ public class ProductoService {
         this.uploadImageService = uploadImageService;
     }
 
+    /**
+     * Catálogo público: retorna ÚNICAMENTE productos activos.
+     * Regla de negocio: CLIENTE y anónimos nunca ven productos inactivos/borradores.
+     */
     @Transactional(readOnly = true)
     public List<ProductoResponseDTO> findAll() {
+        return productoRepository.findByActivoTrue().stream()
+                .map(ProductoResponseDTO::desde)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Productos en PROMOCIÓN — público para visitantes sin cuenta.
+     *
+     * IMPORTANTE: No se usa native query para este filtro porque PostgreSQL
+     * retorna el campo jsonb como String crudo, lo que impide que Hibernate
+     * deserialice el JsonNode correctamente y el campo detalles llega null al DTO.
+     *
+     * Solución: cargamos todos los activos via JPA (Hibernate maneja la
+     * deserialización de jsonb → JsonNode) y filtramos en memoria verificando
+     * el campo detalles.enPromocion o detalles.enDescuento del JSON.
+     *
+     * El front envía y espera el formato:
+     *   "detalles": { "enDescuento": false, "porcentajeDescuento": null }
+     */
+    @Transactional(readOnly = true)
+    public List<ProductoResponseDTO> findEnPromocion() {
+        return productoRepository.findByActivoTrue().stream()
+                .filter(p -> {
+                    if (p.getDetalles() == null) return false;
+                    // Soporte para ambas claves: "enPromocion" (backend) y "enDescuento" (frontend)
+                    boolean enPromocion = p.getDetalles().path("enPromocion").asBoolean(false);
+                    boolean enDescuento = p.getDetalles().path("enDescuento").asBoolean(false);
+                    return enPromocion || enDescuento;
+                })
+                .map(ProductoResponseDTO::desde)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Catálogo completo (activos + inactivos) — exclusivo para ADMIN.
+     * Verificamos el rol desde el SecurityContext para mayor seguridad.
+     */
+    @Transactional(readOnly = true)
+    public List<ProductoResponseDTO> findAllAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean esAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!esAdmin) {
+            // Salvaguarda: si por algún bypass alguien sin rol ADMIN llama este método,
+            // solo ve productos activos.
+            return findAll();
+        }
+
         return productoRepository.findAll().stream()
                 .map(ProductoResponseDTO::desde)
                 .collect(Collectors.toList());
@@ -97,44 +154,33 @@ public class ProductoService {
         return ProductoResponseDTO.desde(guardado);
     }
 
+    /**
+     * Actualización restringida: solo modifica precio, cantidad, stockMinimo, activo
+     * y el campo enPromocion dentro del JSON de detalles.
+     * Campos sensibles (nombre, imágenes, categoría, descripción, etc.) no se alteran.
+     */
     @Transactional
-    public ProductoResponseDTO update(Long id, ProductoRequestDTO dto) {
+    public ProductoResponseDTO update(Long id, ProductoUpdateDTO dto) {
         Producto productoExistente = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado para actualizar"));
 
-        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
-                .orElseThrow(() -> new RuntimeException("La categoría asignada no existe"));
-
-        productoExistente.setNombre(dto.getNombre());
+        // Solo modificamos los campos permitidos por el DTO restringido
         productoExistente.setPrecio(dto.getPrecio());
-        productoExistente.setDescripcion(dto.getDescripcion());
         productoExistente.setCantidad(dto.getCantidad());
         productoExistente.setStockMinimo(dto.getStockMinimo());
-        productoExistente.setDescripcionLong(dto.getDescripcionLong());
-        productoExistente.setDetalles(dto.getDetalles());
-        productoExistente.setCategoria(categoria);
+        productoExistente.setActivo(dto.getActivo());
 
-        // Procesar y subir nuevas imágenes (sobrescribiendo las anteriores)
-        if (dto.getImagenes() != null && !dto.getImagenes().isEmpty()) {
-            List<String> urls = new ArrayList<>();
-            for (String img : dto.getImagenes()) {
-                if (img == null || img.isBlank()) {
-                    continue;
-                }
-                if (img.startsWith("http://") || img.startsWith("https://")) {
-                    urls.add(img);
-                } else {
-                    try {
-                        String url = uploadImageService.uploadBase64(img);
-                        urls.add(url);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Error al subir la imagen a GCP: " + e.getMessage(), e);
-                    }
-                }
+        // enPromocion vive dentro del JsonNode 'detalles'; lo actualizamos
+        // haciendo merge sin eliminar otros sub-campos existentes
+        if (dto.getEnPromocion() != null) {
+            ObjectNode detallesNode;
+            if (productoExistente.getDetalles() != null && productoExistente.getDetalles().isObject()) {
+                detallesNode = (ObjectNode) productoExistente.getDetalles();
+            } else {
+                detallesNode = objectMapper.createObjectNode();
             }
-            productoExistente.setImagenesFromList(urls);
-        } else {
-            productoExistente.setImagen("");
+            detallesNode.put("enPromocion", dto.getEnPromocion());
+            productoExistente.setDetalles(detallesNode);
         }
 
         Producto actualizado = productoRepository.save(productoExistente);

@@ -69,12 +69,28 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         Map<String, Object> error = new LinkedHashMap<>();
-
         error.put("timestamp", LocalDateTime.now());
         error.put("status", 403);
         error.put("error", "Forbidden");
-        error.put("message", "No tienes permisos para realizar esta acción");
-        error.put("path", request.getRequestURI());
+
+        // Mensaje personalizado según el endpoint al que intentó acceder
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+
+        String message;
+        if ("POST".equalsIgnoreCase(method) && path.contains("/api/v1/pedidos")) {
+            message = "Solo los CLIENTES pueden realizar pedidos. " +
+                      "Los administradores gestionan pedidos existentes, pero no pueden crearlos.";
+        } else if (path.contains("/api/v1/productos/admin")) {
+            message = "El catálogo completo (activos e inactivos) es exclusivo para administradores.";
+        } else if (path.contains("/mis-pedidos")) {
+            message = "El historial de 'mis pedidos' es exclusivo para clientes autenticados.";
+        } else {
+            message = "No tienes permisos para realizar esta acción.";
+        }
+
+        error.put("message", message);
+        error.put("path", path);
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
@@ -103,6 +119,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<Map<String, Object>> handleConflict(
             ConflictException ex,
+            HttpServletRequest request) {
+
+        Map<String, Object> error = new LinkedHashMap<>();
+
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", 409);
+        error.put("error", "Conflict");
+        error.put("message", ex.getMessage());
+        error.put("path", request.getRequestURI());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+
+    @ExceptionHandler(StockInsuficienteException.class)
+    public ResponseEntity<Map<String, Object>> handleStockInsuficiente(
+            StockInsuficienteException ex,
             HttpServletRequest request) {
 
         Map<String, Object> error = new LinkedHashMap<>();

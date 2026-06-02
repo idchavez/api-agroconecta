@@ -9,9 +9,11 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/pedidos")
@@ -50,14 +52,32 @@ public class PedidoController {
         }
     }
 
-    // Crear un nuevo pedido
+    /**
+     * Historial de compras del CLIENTE autenticado.
+     * No necesita parámetros: la identidad viene del JWT (SecurityContext).
+     * Solo accesible con rol CLIENTE.
+     */
+    @GetMapping("/mis-pedidos")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<List<PedidoResponseDTO>> misPedidos() {
+        return ResponseEntity.ok(pedidoService.findMisPedidos());
+    }
+
+    // Crear un nuevo pedido — exclusivo para CLIENTE
     @PostMapping
-    public ResponseEntity<PedidoResponseDTO> crearPedido(@Valid @RequestBody PedidoRequestDTO dto) {
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<?> crearPedido(@Valid @RequestBody PedidoRequestDTO dto) {
         try {
             PedidoResponseDTO nuevoPedido = pedidoService.save(dto);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevoPedido);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            // Retorna el mensaje real del error, no un 400 vacío
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "status", 400,
+                            "error", "Bad Request",
+                            "message", e.getMessage()
+                    ));
         }
     }
 

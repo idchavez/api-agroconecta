@@ -13,6 +13,7 @@ public class UsuarioResponseDTO {
     private Rol rol;
     private EstadoUsuario estado;
     private LocalDateTime fechaCreacion;
+    private String telefono;
 
     public UsuarioResponseDTO() {
     }
@@ -27,6 +28,7 @@ public class UsuarioResponseDTO {
         dto.rol = usuario.getRol();
         dto.estado = usuario.getEstado();
         dto.fechaCreacion = usuario.getFechaCreacion();
+        dto.telefono = usuario.getTelefono();
 
         return dto;
     }
@@ -53,5 +55,9 @@ public class UsuarioResponseDTO {
 
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
+    }
+
+    public String getTelefono() {
+        return telefono;
     }
 }

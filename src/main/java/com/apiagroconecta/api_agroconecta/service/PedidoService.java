@@ -1,15 +1,20 @@
 package com.apiagroconecta.api_agroconecta.service;
 
 import com.apiagroconecta.api_agroconecta.auth.model.Rol;
+import com.apiagroconecta.api_agroconecta.exception.StockInsuficienteException;
 import com.apiagroconecta.api_agroconecta.auth.model.Usuario;
 import com.apiagroconecta.api_agroconecta.dto.request.PedidoRequestDTO;
 import com.apiagroconecta.api_agroconecta.dto.response.PedidoResponseDTO;
+import com.apiagroconecta.api_agroconecta.exception.ResourceNotFoundException;
 import com.apiagroconecta.api_agroconecta.model.*;
 import com.apiagroconecta.api_agroconecta.repository.HistorialEstadoPedidoRepository;
 import com.apiagroconecta.api_agroconecta.repository.PedidoRepository;
 import com.apiagroconecta.api_agroconecta.repository.ProductoRepository;
 import com.apiagroconecta.api_agroconecta.auth.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,10 +65,38 @@ public class PedidoService {
         if (cliente == null || cliente.getRol() != Rol.CLIENTE) {
             throw new IllegalArgumentException("El ID proporcionado no pertenece a un cliente válido");
         }
-        
-        return pedidoRepository.findAll()
-                .stream()
-                .filter(p -> p.getCliente() != null && p.getCliente().getId().equals(clienteId))
+
+        return pedidoRepository.findByClienteId(clienteId).stream()
+                .map(PedidoResponseDTO::convertir)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Endpoint /mis-pedidos — el CLIENTE ve solo SUS pedidos.
+     * La identidad se extrae del token JWT registrado en el SecurityContext,
+     * sin que el frontend tenga que enviar el clienteId en el body/URL.
+     */
+    @Transactional(readOnly = true)
+    public List<PedidoResponseDTO> findMisPedidos() {
+        // 1. Obtener el email del usuario autenticado desde el SecurityContextHolder
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof UserDetails)) {
+            throw new IllegalStateException("No hay usuario autenticado en el contexto de seguridad");
+        }
+
+        String email = ((UserDetails) auth.getPrincipal()).getUsername();
+
+        // 2. Buscar el usuario en BD usando el email extraído del JWT
+        Usuario cliente = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + email));
+
+        // 3. Validar que sea CLIENTE (salvaguarda adicional)
+        if (cliente.getRol() != Rol.CLIENTE) {
+            throw new IllegalArgumentException("Solo los clientes pueden consultar 'mis pedidos'");
+        }
+
+        // 4. Retornar exclusivamente los pedidos de este cliente
+        return pedidoRepository.findByClienteId(cliente.getId()).stream()
                 .map(PedidoResponseDTO::convertir)
                 .collect(Collectors.toList());
     }
@@ -91,7 +124,10 @@ public class PedidoService {
                 throw new IllegalArgumentException("Producto ID " + item.getProductoId() + " no encontrado o inactivo");
             }
             if (producto.getCantidad() < item.getCantidad()) {
-                throw new IllegalArgumentException("Stock insuficiente para el producto: " + producto.getNombre());
+                throw new StockInsuficienteException(
+                    "El producto '" + producto.getNombre() + "' no cuenta con suficiente stock. " +
+                    "Stock actual disponible: " + producto.getCantidad()
+                );
             }
 
             // Descontar stock
@@ -183,7 +219,10 @@ public class PedidoService {
                 throw new IllegalArgumentException("Producto ID " + item.getProductoId() + " no encontrado o inactivo");
             }
             if (producto.getCantidad() < item.getCantidad()) {
-                throw new IllegalArgumentException("Stock insuficiente para el producto: " + producto.getNombre());
+                throw new StockInsuficienteException(
+                    "El producto '" + producto.getNombre() + "' no cuenta con suficiente stock. " +
+                    "Stock actual disponible: " + producto.getCantidad()
+                );
             }
 
             // Descontar nuevo stock
