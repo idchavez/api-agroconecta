@@ -29,7 +29,7 @@ public class UploadImageService {
                 .setContentType(file.getContentType())
                 .build();
         storage.create(blobInfo, file.getBytes());
-        return String.format("https://googleapis.com", bucketName, fileName);
+        return String.format("https://storage.googleapis.com/%s/%s", bucketName, fileName);
     }
 
     public String uploadBase64(String base64Image) throws IOException {
@@ -54,6 +54,6 @@ public class UploadImageService {
                 .build();
         storage.create(blobInfo, decodedBytes);
 
-        return String.format("https://googleapis.com", bucketName, fileName);
+        return String.format("https://storage.googleapis.com/%s/%s", bucketName, fileName);
     }
 }
