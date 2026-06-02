@@ -42,6 +42,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Swagger: público durante el desarrollo.
                         .requestMatchers(
                                 "/swagger-ui/**",

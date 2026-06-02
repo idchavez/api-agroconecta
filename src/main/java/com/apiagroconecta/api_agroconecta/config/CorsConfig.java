@@ -1,37 +1,42 @@
 package com.apiagroconecta.api_agroconecta.config;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 public class CorsConfig {
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public FilterRegistrationBean<CorsFilter> customCorsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        // Orígenes permitidos (tu frontend)
-        config.setAllowedOrigins(List.of("https://danielvega825.github.io"));
-
-        // Métodos permitidos
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // Headers permitidos
-        config.setAllowedHeaders(List.of("*"));
-
-        // Permitir envío de credenciales/tokens
+        // Permitir envío de credenciales (esencial si usas cookies o headers de auth)
         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Aplicar a todos los endpoints
+        // El origen de tu frontend en GitHub Pages (sin barra al final)
+        config.setAllowedOrigins(List.of("https://danielvega825.github.io"));
+
+        // Permitir todos los headers
+        config.setAllowedHeaders(List.of("*"));
+
+        // Métodos permitidos, incluyendo OPTIONS explícitamente
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        // Aplicar a todas las rutas de la API
         source.registerCorsConfiguration("/**", config);
 
-        return source;
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+
+        // ESTO ES LA CLAVE: Ejecutar este filtro antes que cualquier filtro de Spring Security
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return bean;
     }
 }
