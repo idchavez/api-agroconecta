@@ -11,6 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.UUID;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 @Service
 public class UploadImageService {
 
@@ -19,20 +22,23 @@ public class UploadImageService {
 
     // Inyectamos las propiedades directamente en el constructor
     public UploadImageService(
-            @Value("${gcp.bucket.name}") String bucketName,
-            @Value("${spring.cloud.gcp.credentials.location}") String gcpConfigFile) throws IOException {
+        @Value("${gcp.bucket.name}") String bucketName,
+        @Value("${GCP_CREDENTIALS_JSON}") String credentialsJson) throws IOException {
 
-        this.bucketName = bucketName;
+    this.bucketName = bucketName;
 
-        // Carga el archivo gcp-credentials.json desde resources
-        ClassPathResource resource = new ClassPathResource(gcpConfigFile);
-        GoogleCredentials credentials = GoogleCredentials.fromStream(resource.getInputStream());
+    GoogleCredentials credentials =
+            GoogleCredentials.fromStream(
+                    new ByteArrayInputStream(
+                            credentialsJson.getBytes(StandardCharsets.UTF_8)
+                    )
+            );
 
-        this.storage = StorageOptions.newBuilder()
-                .setCredentials(credentials)
-                .build()
-                .getService();
-    }
+    this.storage = StorageOptions.newBuilder()
+            .setCredentials(credentials)
+            .build()
+            .getService();
+}
 
     public String uploadFile(MultipartFile file) throws IOException {
         String fileName = UUID.randomUUID().toString() + "-" + file.getOriginalFilename();
