@@ -156,8 +156,13 @@ public class ProductoService {
 
     /**
      * Actualización restringida: solo modifica precio, cantidad, stockMinimo, activo
-     * y el campo enPromocion dentro del JSON de detalles.
+     * y el objeto 'detalles' (JsonNode) del producto.
      * Campos sensibles (nombre, imágenes, categoría, descripción, etc.) no se alteran.
+     *
+     * El campo 'detalles' se fusiona (merge) con el JSON existente en la BD:
+     * si el payload incluye { "enDescuento": true, "porcentajeDescuento": 10 },
+     * se actualizan esos campos sin borrar otros sub-campos presentes en la BD.
+     * Si 'detalles' viene null en el DTO, el campo en la BD no se toca.
      */
     @Transactional
     public ProductoResponseDTO update(Long id, ProductoUpdateDTO dto) {
@@ -170,16 +175,19 @@ public class ProductoService {
         productoExistente.setStockMinimo(dto.getStockMinimo());
         productoExistente.setActivo(dto.getActivo());
 
-        // enPromocion vive dentro del JsonNode 'detalles'; lo actualizamos
-        // haciendo merge sin eliminar otros sub-campos existentes
-        if (dto.getEnPromocion() != null) {
+        // Merge del JsonNode 'detalles': toma los valores actuales de la BD
+        // y sobreescribe/agrega los campos que llegan en el payload del DTO.
+        // Formato esperado: { "enDescuento": false, "porcentajeDescuento": null }
+        if (dto.getDetalles() != null && dto.getDetalles().isObject()) {
             ObjectNode detallesNode;
             if (productoExistente.getDetalles() != null && productoExistente.getDetalles().isObject()) {
                 detallesNode = (ObjectNode) productoExistente.getDetalles();
             } else {
                 detallesNode = objectMapper.createObjectNode();
             }
-            detallesNode.put("enPromocion", dto.getEnPromocion());
+            dto.getDetalles().fields().forEachRemaining(entry ->
+                    detallesNode.set(entry.getKey(), entry.getValue())
+            );
             productoExistente.setDetalles(detallesNode);
         }
 

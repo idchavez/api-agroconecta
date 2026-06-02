@@ -11,6 +11,11 @@ import java.math.BigDecimal;
  * DTO restringido para la actualización de un producto existente.
  * Solo expone los campos que el administrador puede modificar,
  * protegiendo campos sensibles como ID, nombre, imágenes y categoría.
+ *
+ * El campo 'detalles' acepta un objeto JSON con el formato:
+ *   { "enDescuento": false, "porcentajeDescuento": null }
+ * Su contenido se fusiona (merge) con el JSON existente en la BD,
+ * sin eliminar sub-campos que no vengan en el payload.
  */
 public class ProductoUpdateDTO {
 
@@ -30,10 +35,11 @@ public class ProductoUpdateDTO {
     private Boolean activo;
 
     /**
-     * Campo 'enPromocion' llega dentro del JSON del campo 'detalles'.
-     * Se recibe aquí directamente para simplificar el payload de actualización.
+     * Objeto JSON con los detalles de descuento/promoción del producto.
+     * Formato esperado: { "enDescuento": false, "porcentajeDescuento": null }
+     * Si se omite, el campo 'detalles' en la BD no se modifica.
      */
-    private Boolean enPromocion;
+    private JsonNode detalles;
 
     public ProductoUpdateDTO() {}
 
@@ -49,6 +55,6 @@ public class ProductoUpdateDTO {
     public Boolean getActivo() { return activo; }
     public void setActivo(Boolean activo) { this.activo = activo; }
 
-    public Boolean getEnPromocion() { return enPromocion; }
-    public void setEnPromocion(Boolean enPromocion) { this.enPromocion = enPromocion; }
+    public JsonNode getDetalles() { return detalles; }
+    public void setDetalles(JsonNode detalles) { this.detalles = detalles; }
 }

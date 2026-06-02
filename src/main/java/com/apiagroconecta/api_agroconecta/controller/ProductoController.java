@@ -62,8 +62,11 @@ public class ProductoController {
 
     /**
      * Actualización restringida: solo permite modificar precio, cantidad,
-     * stockMinimo, activo y enPromocion. Campos sensibles (nombre, imágenes,
-     * categoría, etc.) quedan intactos.
+     * stockMinimo, activo y el objeto 'detalles' (JsonNode).
+     * Campos sensibles (nombre, imágenes, categoría, etc.) quedan intactos.
+     *
+     * Formato esperado para 'detalles':
+     *   { "enDescuento": false, "porcentajeDescuento": null }
      */
     @PutMapping("/{id}")
     public ResponseEntity<ProductoResponseDTO> actualizar(
