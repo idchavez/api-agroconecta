@@ -11,8 +11,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import org.springframework.security.config.Customizer;
-
 // @EnableWebSecurity: activa el módulo de seguridad web de Spring Security.
 // Esta clase define el SecurityFilterChain: las reglas que determinan
 // qué solicitudes pasan y cuáles se bloquean, y con qué condiciones.
@@ -34,9 +32,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable())
-                // 👇 CAMBIA ESTA LÍNEA 👇
-                .cors(Customizer.withDefaults())
+    .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configure(http))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
