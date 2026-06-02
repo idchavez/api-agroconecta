@@ -159,4 +159,21 @@ public class Producto {
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
     }
+
+    public java.util.List<String> getImagenesAsList() {
+        if (this.imagen == null || this.imagen.isBlank()) {
+            return java.util.Collections.emptyList();
+        }
+        return java.util.Arrays.stream(this.imagen.split("\\|"))
+                .filter(s -> !s.isBlank())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public void setImagenesFromList(java.util.List<String> list) {
+        if (list == null || list.isEmpty()) {
+            this.imagen = "";
+        } else {
+            this.imagen = String.join("|", list);
+        }
+    }
 }

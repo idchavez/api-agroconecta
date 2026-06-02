@@ -51,11 +51,21 @@ public class AuthController {
 
         // Hashear la contraseña antes de guardar.
         // NUNCA se guarda la contraseña en texto plano.
+        Rol rolFinal = request.getRol() != null ? request.getRol() : Rol.CLIENTE;
+
+        // El teléfono es OBLIGATORIO para CLIENTE, OPCIONAL para ADMIN
+        if (rolFinal == Rol.CLIENTE &&
+                (request.getTelefono() == null || request.getTelefono().isBlank())) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "El teléfono es obligatorio para los clientes"));
+        }
+
         Usuario usuario = new Usuario(
                 request.getEmail(),
                 passwordEncoder.encode(request.getPassword()),
                 request.getNombre(),
-                request.getRol() != null ? request.getRol() : Rol.CLIENTE
+                rolFinal,
+                request.getTelefono()
         );
 
         usuarioRepository.save(usuario);
@@ -91,6 +101,7 @@ public class AuthController {
 
         return ResponseEntity.ok(Map.of(
                 "token", token,
+                "id", usuario.getId(),
                 "email", usuario.getEmail(),
                 "rol", usuario.getRol(),
                 "nombre", usuario.getNombre()

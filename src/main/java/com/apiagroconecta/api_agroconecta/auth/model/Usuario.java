@@ -41,6 +41,10 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
+    // Teléfono de contacto. Obligatorio para CLIENTE, opcional para ADMIN.
+    @Column(length = 20)
+    private String telefono;
+
     // Constructor vacío obligatorio para JPA.
     public Usuario() {}
 
@@ -50,9 +54,14 @@ public class Usuario implements UserDetails {
         this.password = password;
         this.nombre = nombre;
         this.rol = rol;
-
         this.estado = EstadoUsuario.ACTIVO;
         this.fechaCreacion = LocalDateTime.now();
+    }
+
+    // Constructor con teléfono (usado en registro de CLIENTE).
+    public Usuario(String email, String password, String nombre, Rol rol, String telefono) {
+        this(email, password, nombre, rol);
+        this.telefono = telefono;
     }
 
     // getAuthorities: Spring Security llama a este método para saber
@@ -107,4 +116,6 @@ public class Usuario implements UserDetails {
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
+    public String getTelefono() { return telefono; }
+    public void setTelefono(String telefono) { this.telefono = telefono; }
 }

@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 // qué solicitudes pasan y cuáles se bloquean, y con qué condiciones.
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity  // Activa @PreAuthorize, @PostAuthorize, etc. a nivel de método
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
@@ -53,14 +55,27 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/categorias/**", "/api/v1/productos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/categorias/**", "/api/v1/productos/**").hasRole("ADMIN")
 
-                        // Lectura para ADMIN y CLIENTE
-                        .requestMatchers(HttpMethod.GET, "/api/v1/productos/**", "/api/v1/categorias/**").hasAnyRole("ADMIN", "CLIENTE")
+                        // ── CATÁLOGO PÚBLICO ──────────────────────────────────────────────
+                        // Cualquier visitante (con o sin cuenta) puede ver:
+                        //   · El catálogo de productos activos: GET /api/v1/productos
+                        //   · Los productos en promoción:        GET /api/v1/productos/promociones
+                        //   · Las categorías disponibles:        GET /api/v1/categorias/**
+                        // El backend garantiza que solo retorna activos (findByActivoTrue)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/productos", "/api/v1/productos/").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/productos/promociones").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categorias", "/api/v1/categorias/**").permitAll()
 
-                        // Pedidos
+                        // Catálogo completo (activos + inactivos) solo para ADMIN
+                        .requestMatchers(HttpMethod.GET, "/api/v1/productos/admin").hasRole("ADMIN")
+
+                        // Lectura de producto individual para ADMIN y CLIENTE autenticado
+                        .requestMatchers(HttpMethod.GET, "/api/v1/productos/**").hasAnyRole("ADMIN", "CLIENTE")
+
+                        // Pedidos: reglas específicas primero (orden importa)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/pedidos/mis-pedidos").hasRole("CLIENTE")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/pedidos").hasRole("CLIENTE")
                         .requestMatchers("/api/v1/pedidos/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/pedidos/**").hasRole("CLIENTE")
 
-                        .requestMatchers("/api/v1/detalles/**").hasAnyRole("ADMIN", "CLIENTE")
                         // Todo lo demás requiere autenticación.
                         .anyRequest().authenticated()
                 )

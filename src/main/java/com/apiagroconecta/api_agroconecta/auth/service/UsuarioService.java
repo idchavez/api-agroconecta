@@ -44,6 +44,13 @@ public class UsuarioService {
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         }
+        // Validar teléfono: obligatorio si el usuario es CLIENTE
+        if (usuario.getRol() == com.apiagroconecta.api_agroconecta.auth.model.Rol.CLIENTE) {
+            if (request.getTelefono() == null || request.getTelefono().isBlank()) {
+                throw new IllegalArgumentException("El teléfono es obligatorio para los clientes");
+            }
+        }
+        usuario.setTelefono(request.getTelefono());
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
         return UsuarioResponseDTO.desde(usuarioActualizado);
     }
